@@ -33,9 +33,9 @@ public class PermittedMembers {
             .map(HouseholdProfile::getName);
     }
 
+    //the name is required by the schema of the profile (@Nonnull of the SDK)
     private static boolean sameName(final HouseholdProfile profile, final String member) {
-        return profile.getName() != null
-            && profile.getName().toUpperCase(Locale.ROOT).equals(member.toUpperCase(Locale.ROOT));
+        return profile.getName().toUpperCase(Locale.ROOT).equals(member.toUpperCase(Locale.ROOT));
     }
 
     private static boolean mayUnlock(final HouseholdProfile profile) {
