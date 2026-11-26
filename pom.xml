@@ -39,6 +39,9 @@
 		<sonar.organization>smart-home-automation-system</sonar.organization>
 		<sonar.projectKey>smart-home-automation-system_media-service</sonar.projectKey>
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
+		<!-- main() only starts Spring - a test that called it would start the whole application on its ports; the context
+		     itself is covered by MediaServiceApplicationTest -->
+		<sonar.coverage.exclusions>**/MediaServiceApplication.java</sonar.coverage.exclusions>
 
 		<logbook.version>4.2.0</logbook.version>
 
