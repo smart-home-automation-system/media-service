@@ -11,6 +11,25 @@ spring:
     # missing from the MDC of every log statement inside a reactive chain
     context-propagation: auto
 
+internal:
+  service:
+    # the household profiles: the member who presses the button of the amplifier must hold amplifier_unlock (HAS-515)
+    database: http://database-service:6200
+
+media:
+  # the amplifier of the house (HAS-515). The address is its host on the LAN, from the manifest of deployment-tools - no
+  # default and never in this public repository; cholewa.required-properties refuses the start without it. The timeout
+  # waits for the connection and for the answer (a bare number is seconds, 1 - 30 s)
+  amplifier:
+    address: ${amplifier-address}
+    timeout: PT5S
+
+cholewa:
+  # refuses the start before the first bean when one of these has no value (cholewa-commons >= 1.9.0)
+  required-properties:
+    - property: media.amplifier.address
+      variable: amplifier-address
+
 server:
   port: 6200
 management:
@@ -51,6 +70,10 @@ spring:
     activate:
       on-profile: local
 
+internal:
+  service:
+    database: http://localhost:6005
+
 server:
   port: 6018
 management:
@@ -71,6 +94,15 @@ spring:
   config:
     activate:
       on-profile: test
+
+# a context test reaches nothing of the house: both at an address nothing listens on
+internal:
+  service:
+    database: http://localhost:1
+
+media:
+  amplifier:
+    address: localhost:1
 
 logbook:
   format:

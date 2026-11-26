@@ -31,6 +31,17 @@ class MediaServiceApplicationTest {
         assertThat(environment.getProperty("spring.webflux.base-path")).isEqualTo("/home/media");
     }
 
+    //the address of the amplifier has no default: the start is refused without the variable (HAS-515), and a context test
+    //points it at an address nothing listens on
+    @Test
+    void should_require_the_address_of_the_amplifier() {
+        assertThat(environment.getProperty("cholewa.required-properties[0].property")).isEqualTo("media.amplifier.address");
+        assertThat(environment.getProperty("cholewa.required-properties[0].variable")).isEqualTo("amplifier-address");
+        assertThat(environment.getProperty("media.amplifier.address")).isEqualTo("localhost:1");
+        assertThat(environment.getProperty("media.amplifier.timeout")).isEqualTo("PT5S");
+        assertThat(environment.getProperty("internal.service.database")).isEqualTo("http://localhost:1");
+    }
+
     //every trace is kept: the trace in the logs is the only record of a request
     @Test
     void should_sample_every_trace() {

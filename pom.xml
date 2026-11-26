@@ -44,6 +44,7 @@
 		<sonar.coverage.exclusions>**/MediaServiceApplication.java</sonar.coverage.exclusions>
 
 		<logbook.version>4.2.0</logbook.version>
+		<mockwebserver3.version>5.5.1</mockwebserver3.version>
 
 		<!--  internal dependencies versions-->
 		<cholewa-commons.version>2.0.0</cholewa-commons.version>
@@ -125,6 +126,13 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-webflux-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<!-- the amplifier and database-service in the tests - never the device of the house -->
+		<dependency>
+			<groupId>com.squareup.okhttp3</groupId>
+			<artifactId>mockwebserver3</artifactId>
+			<version>${mockwebserver3.version}</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
