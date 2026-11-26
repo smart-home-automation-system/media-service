@@ -31,13 +31,53 @@ The audio and video equipment of the house, part of the
 unlock of the amplifier: the amplifier hangs after every loss of the grid, and a member of the household with the
 permission `amplifier_unlock` presses a button in the dashboard to bring it back.
 
-**Today the service is a scaffold** (HAS-514): it answers its probes and exposes its metrics, nothing more. The unlock
-comes with HAS-515.
-
 - No database and no broker - the service is stateless.
-- Base path `/home/media`, routed by `api-gateway-service` (from HAS-516).
+- Base path `/home/media`, routed by `api-gateway-service` (from HAS-516); the button is on the settings page of the
+  dashboard (HAS-517).
 - Spring Boot 4.2.0, Java 21; `cholewa-commons` 2.0.0 (the error contract), `smart-home-sdk` 1.26.0 (the household
   profiles).
+
+## API
+
+| Method | Path | Answer |
+|---|---|---|
+| `POST` | `/home/media/amplifier/unlock?source=dashboard&member=<name>` | `202` once the amplifier took the file |
+
+The unlock (HAS-515) sends one `POST /goform/formPostHandler` to the web page of the amplifier - a `multipart/form-data`
+form with a text file of a few bytes as the part `appFirmware` (`unlock.txt`) and the field `appFirmwareFile=Upload`.
+The amplifier refuses the file as an invalid BCD file, answers `302` to `.../bl_bcd_error.asp`, and works again. The
+call is **sent once and never retried**, and only **one at a time**.
+
+**The state of the amplifier cannot be read**: its page redirects to the same `bl_index.asp` hung or healthy, and only
+port 80 is open. The answer of the unlock is the only outcome - do not build a status or a detection on the amplifier.
+
+`member` must be a switched-on member of the household registry holding the permission `amplifier_unlock`, checked
+against `GET /home/household/profiles` of `database-service` - a trace of who pressed and a guard against a mistake, not
+access control (nothing behind the gateway is authenticated). `source` is `dashboard`.
+
+| Status | Code | When |
+|---|---|---|
+| `400` | `UNKNOWN_MEMBER` | no switched-on member of that name |
+| `403` | `NOT_PERMITTED` | the member does not hold `amplifier_unlock` |
+| `409` | `UNLOCK_IN_PROGRESS` | another unlock is on its way to the amplifier |
+| `502` | `AMPLIFIER_REFUSED` | the amplifier answered anything but the redirect, or closed the connection |
+| `503` | `AMPLIFIER_UNAVAILABLE` | no connection to the amplifier - nothing was sent |
+| `503` | `REGISTRY_UNAVAILABLE` | the household profiles could not be read |
+| `504` | `AMPLIFIER_TIMEOUT` | no answer within `media.amplifier.timeout` - the file may have been taken |
+
+Every refusal above carries its `code` in the error contract of `cholewa-commons`; a malformed request - no `member`,
+one longer than 50 characters, or a `source` other than `dashboard` - is a `400` of the validation without a code.
+Every unlock is one INFO line with the member, the source and the outcome.
+
+## Configuration
+
+| Property | Default | Meaning |
+|---|---|---|
+| `media.amplifier.address` | none - `amplifier-address`, required | the host of the amplifier on the LAN, from the manifest |
+| `media.amplifier.timeout` | `PT5S` | the wait for the connection and for the answer (a bare number is seconds, 1 - 30 s) |
+| `internal.service.database` | `http://database-service:6200` | database-service, for the household profiles |
+
+The address never appears in this repository; the service refuses to start without it (`cholewa.required-properties`).
 
 ## Run locally
 
@@ -45,7 +85,9 @@ comes with HAS-515.
 mvn verify
 ```
 
-needs no Docker. The `local` Spring profile listens on port `6018` (Actuator `8018`):
+needs no Docker - the tests call a `MockWebServer`, never the amplifier. The `local` Spring profile listens on port
+`6018` (Actuator `8018`) and reads the profiles from database-service on `6005`; a local run needs `amplifier-address`
+and **a local unlock reaches the real amplifier**:
 
 ```
 java -jar target/media-service-0.0.1-SNAPSHOT.jar --spring.profiles.active=home,local
