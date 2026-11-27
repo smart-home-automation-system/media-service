@@ -45,12 +45,6 @@ public abstract class AmplifierException extends RuntimeException {
         }
     }
 
-    public static final class NotPermitted extends AmplifierException {
-        public NotPermitted(final String member) {
-            super(AmplifierError.NOT_PERMITTED, member + " does not hold the permission amplifier_unlock");
-        }
-    }
-
     public static final class RegistryUnavailable extends AmplifierException {
         public RegistryUnavailable() {
             super(AmplifierError.REGISTRY_UNAVAILABLE, "The household profiles could not be read");

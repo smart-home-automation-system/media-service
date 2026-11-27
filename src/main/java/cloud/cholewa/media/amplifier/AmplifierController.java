@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
 //The amplifier (HAS-515): POST /amplifier/unlock sends the file that unhangs it after a loss of the grid - a write to
-//the house by a member with amplifier_unlock, from the dashboard. 202 once the amplifier took the file (it should work
-//again - there is no state to read back); 400 UNKNOWN_MEMBER, 403 NOT_PERMITTED, 409 UNLOCK_IN_PROGRESS, 502
+//the house by a member of the household, from the dashboard. 202 once the amplifier took the file (it should work
+//again - there is no state to read back); 400 UNKNOWN_MEMBER, 409 UNLOCK_IN_PROGRESS, 502
 //AMPLIFIER_REFUSED, 503 AMPLIFIER_UNAVAILABLE / REGISTRY_UNAVAILABLE, 504 AMPLIFIER_TIMEOUT (it may have been taken)
 @RestController
 @RequestMapping("/amplifier")

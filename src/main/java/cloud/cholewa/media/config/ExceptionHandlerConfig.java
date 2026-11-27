@@ -17,7 +17,6 @@ import java.util.Map;
 import static org.springframework.http.HttpStatus.BAD_GATEWAY;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CONFLICT;
-import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.GATEWAY_TIMEOUT;
 import static org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE;
 
@@ -42,7 +41,6 @@ public class ExceptionHandlerConfig {
             AmplifierException.Timeout.class, new DomainExceptionProcessor(GATEWAY_TIMEOUT, AmplifierError.AMPLIFIER_TIMEOUT),
             AmplifierException.InProgress.class, new DomainExceptionProcessor(CONFLICT, AmplifierError.UNLOCK_IN_PROGRESS),
             AmplifierException.UnknownMember.class, new DomainExceptionProcessor(BAD_REQUEST, AmplifierError.UNKNOWN_MEMBER),
-            AmplifierException.NotPermitted.class, new DomainExceptionProcessor(FORBIDDEN, AmplifierError.NOT_PERMITTED),
             AmplifierException.RegistryUnavailable.class,
             new DomainExceptionProcessor(SERVICE_UNAVAILABLE, AmplifierError.REGISTRY_UNAVAILABLE)
         ));

@@ -14,6 +14,6 @@ class AmplifierErrorTest {
     void should_keep_the_names_of_the_codes() {
         assertThat(Arrays.stream(AmplifierError.values()).map(Enum::name)).containsExactly(
             "AMPLIFIER_REFUSED", "AMPLIFIER_UNAVAILABLE", "AMPLIFIER_TIMEOUT", "UNLOCK_IN_PROGRESS", "UNKNOWN_MEMBER",
-            "NOT_PERMITTED", "REGISTRY_UNAVAILABLE");
+            "REGISTRY_UNAVAILABLE");
     }
 }
