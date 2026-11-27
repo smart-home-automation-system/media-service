@@ -1,9 +1,10 @@
 # media-service
 
 The audio and video equipment of the house (owner, 2026-11-24): the place for what plays sound and picture. Its first
-job, epic HAS-508, is the unlock of the Harman Kardon amplifier, which hangs after every loss of the grid - a member
-with the permission `amplifier_unlock` presses a button in the dashboard. Scaffolded in HAS-514 from `water-service`
-(the `new-service` skill); the unlock is HAS-515, the route of the gateway HAS-516, the button HAS-517.
+job, epic HAS-508, is the unlock of the Harman Kardon amplifier, which hangs after every loss of the grid - the
+administrator or a member with the permission `amplifier_unlock` presses a button on the media page of the dashboard.
+Scaffolded in HAS-514 from `water-service` (the `new-service` skill); the unlock is HAS-515, the route of the gateway
+HAS-516, the button HAS-517.
 
 Part of the smart-home-automation-system organization — org-wide conventions, the
 repository map and working rules come from the workspace-level context
@@ -17,8 +18,10 @@ IntelliJ.
 - **The state of the amplifier cannot be read - never design a status or a detection.** Its page redirects to the same
   `bl_index.asp` hung or healthy, and only port 80 is open.
 - **The unlock is a button only - never automatic** after the grid returns.
-- A service of its own (not amx-service), and a permission of the registry for the owner and one more member (not every
-  member) - decided, do not re-ask.
+- A service of its own (not amx-service) - decided, do not re-ask.
+- **The service blocks nothing by a role or a permission** (owner, 2026-11-27, HAS-517 - a rule of the whole project, in
+  `working-rules.md`): who is offered the button is the dashboard's - the administrator on the media page, and a resident
+  granted `amplifier_unlock` (the owner gives it to one more member). The service only finds the member who pressed.
 
 ## Role in the system
 
@@ -26,8 +29,7 @@ IntelliJ.
 - Calls: the amplifier on the LAN over HTTP (`media.amplifier.address`, from the manifest of deployment-tools) and
   `database-service` for the household profiles (`GET /home/household/profiles` over k8s DNS, `internal.service.database`).
 - Uses libraries: `cholewa-commons` 2.0.0 (the error contract, `DomainExceptionProcessor`, `DownstreamErrors`, the
-  required properties; Logbook in the reactive chain), `smart-home-sdk` 1.26.0 (`HouseholdProfile`,
-  `MemberPermission.AMPLIFIER_UNLOCK`).
+  required properties; Logbook in the reactive chain), `smart-home-sdk` 1.26.0 (`HouseholdProfile`).
 - Database: none. Broker: none - no RabbitMQ starter, so no `NotificationPublisher` and nothing of the move of the
   RabbitMQ support in Boot 4.2 applies here.
 - Integrates with hardware: the amplifier (GoAhead-Webs, HTTP/1.0, port 80) - described in deployment-tools, its address
@@ -60,10 +62,11 @@ IntelliJ.
     the call is subscribed and given back on completion, error and cancel - a cancel that came between taking it and
     calling the amplifier kept it for good in the first form (found by `AmplifierServiceTest`). A second unlock meanwhile
     is `409 UNLOCK_IN_PROGRESS`.
-  - **The member** (`PermittedMembers`): a switched-on member of the profiles of database-service, the name compared
-    ignoring case and answered as the registry spells it, holding `amplifier_unlock` - `400 UNKNOWN_MEMBER`, `403
-    NOT_PERMITTED` (a profile without the list holds nothing), `503 REGISTRY_UNAVAILABLE` (the profiles not read). A trace
-    of who pressed and a guard against a mistake, not access control - nothing behind the gateway is authenticated.
+  - **The member** (`HouseholdMembers`): a switched-on member of the profiles of database-service, the name compared
+    ignoring case and answered as the registry spells it - `400 UNKNOWN_MEMBER`, `503 REGISTRY_UNAVAILABLE` (the profiles
+    not read). A trace of who pressed, **never a check of the role or a permission** (owner, 2026-11-27, HAS-517 - 0.3.0
+    dropped the `403 NOT_PERMITTED` of 0.2.0): the dashboard offers the button to the administrator and to a member
+    granted `amplifier_unlock`. Nothing behind the gateway is authenticated.
     `source` is `dashboard` only.
   - **`HouseholdProfilesClient` is the third copy** of the client of the profiles (appliance-service, gate-service,
     media-service) - three copies stay where they are (the rule of `cholewa-commons`).

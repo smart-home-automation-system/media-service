@@ -13,7 +13,7 @@ spring:
 
 internal:
   service:
-    # the household profiles: the member who presses the button of the amplifier must hold amplifier_unlock (HAS-515)
+    # the household profiles: the member who presses the button of the amplifier is a member of the household (HAS-515)
     database: http://database-service:6200
 
 media:

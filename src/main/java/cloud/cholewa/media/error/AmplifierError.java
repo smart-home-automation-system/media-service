@@ -26,9 +26,6 @@ public enum AmplifierError implements ErrorId {
     //the member who pressed the button is no switched-on member of the household registry
     UNKNOWN_MEMBER("Unknown household member"),
 
-    //the member does not hold the permission amplifier_unlock
-    NOT_PERMITTED("Not permitted"),
-
     //the household profiles could not be read, so the member cannot be checked
     REGISTRY_UNAVAILABLE("Registry unavailable");
 

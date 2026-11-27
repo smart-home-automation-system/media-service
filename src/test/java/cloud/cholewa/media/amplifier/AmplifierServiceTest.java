@@ -17,13 +17,13 @@ import static org.mockito.Mockito.when;
 //HAS-515: the member first, then one call to the amplifier at a time
 class AmplifierServiceTest {
 
-    private final PermittedMembers permittedMembers = mock(PermittedMembers.class);
+    private final HouseholdMembers householdMembers = mock(HouseholdMembers.class);
     private final AmplifierClient amplifierClient = mock(AmplifierClient.class);
-    private final AmplifierService sut = new AmplifierService(permittedMembers, amplifierClient);
+    private final AmplifierService sut = new AmplifierService(householdMembers, amplifierClient);
 
     @Test
-    void should_unlock_for_a_permitted_member() {
-        when(permittedMembers.permitted("anna")).thenReturn(Mono.just("Anna"));
+    void should_unlock_for_a_member_of_the_household() {
+        when(householdMembers.known("anna")).thenReturn(Mono.just("Anna"));
         when(amplifierClient.unlock()).thenReturn(Mono.empty());
 
         sut.unlock("dashboard", "anna").as(StepVerifier::create).verifyComplete();
@@ -33,9 +33,9 @@ class AmplifierServiceTest {
 
     @Test
     void should_send_nothing_for_a_member_who_is_refused() {
-        when(permittedMembers.permitted(anyString())).thenReturn(Mono.error(new AmplifierException.NotPermitted("Jan")));
+        when(householdMembers.known(anyString())).thenReturn(Mono.error(new AmplifierException.UnknownMember("Ola")));
 
-        sut.unlock("dashboard", "Jan").as(StepVerifier::create).verifyError(AmplifierException.NotPermitted.class);
+        sut.unlock("dashboard", "Ola").as(StepVerifier::create).verifyError(AmplifierException.UnknownMember.class);
 
         verify(amplifierClient, never()).unlock();
     }
@@ -44,7 +44,7 @@ class AmplifierServiceTest {
     @Test
     void should_refuse_a_second_unlock_while_the_first_is_on_its_way() {
         final Sinks.Empty<Void> firstAnswer = Sinks.empty();
-        when(permittedMembers.permitted(anyString())).thenReturn(Mono.just("Anna"));
+        when(householdMembers.known(anyString())).thenReturn(Mono.just("Anna"));
         when(amplifierClient.unlock()).thenReturn(firstAnswer.asMono());
 
         sut.unlock("dashboard", "Anna").as(StepVerifier::create)
@@ -59,7 +59,7 @@ class AmplifierServiceTest {
     //the guard is given back after a failure, so the next press is sent
     @Test
     void should_send_the_next_unlock_after_a_failed_one() {
-        when(permittedMembers.permitted(anyString())).thenReturn(Mono.just("Anna"));
+        when(householdMembers.known(anyString())).thenReturn(Mono.just("Anna"));
         when(amplifierClient.unlock())
             .thenReturn(Mono.error(new AmplifierException.Timeout("The amplifier did not answer in time")))
             .thenReturn(Mono.empty());
@@ -73,7 +73,7 @@ class AmplifierServiceTest {
     //a caller that gives up while the amplifier is called gives the guard back too
     @Test
     void should_send_the_next_unlock_after_a_cancelled_one() {
-        when(permittedMembers.permitted(anyString())).thenReturn(Mono.just("Anna"));
+        when(householdMembers.known(anyString())).thenReturn(Mono.just("Anna"));
         when(amplifierClient.unlock()).thenReturn(Mono.never());
 
         final Disposable first = sut.unlock("dashboard", "Anna").subscribe();
@@ -88,7 +88,7 @@ class AmplifierServiceTest {
     @Test
     void should_send_the_next_unlock_after_one_cancelled_before_the_call() {
         final Sinks.One<String> member = Sinks.one();
-        when(permittedMembers.permitted(anyString())).thenReturn(member.asMono()).thenReturn(Mono.just("Anna"));
+        when(householdMembers.known(anyString())).thenReturn(member.asMono()).thenReturn(Mono.just("Anna"));
         when(amplifierClient.unlock()).thenReturn(Mono.empty());
 
         final Disposable first = sut.unlock("dashboard", "Anna").subscribe();

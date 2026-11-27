@@ -49,7 +49,6 @@ class AmplifierControllerTest {
             Arguments.of(new AmplifierException.Timeout("The amplifier did not answer in time"), 504, "AMPLIFIER_TIMEOUT"),
             Arguments.of(new AmplifierException.InProgress(), 409, "UNLOCK_IN_PROGRESS"),
             Arguments.of(new AmplifierException.UnknownMember("Ola"), 400, "UNKNOWN_MEMBER"),
-            Arguments.of(new AmplifierException.NotPermitted("Jan"), 403, "NOT_PERMITTED"),
             Arguments.of(new AmplifierException.RegistryUnavailable(), 503, "REGISTRY_UNAVAILABLE"));
     }
 

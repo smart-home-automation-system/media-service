@@ -18,13 +18,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @RequiredArgsConstructor
 public class AmplifierService {
 
-    private final PermittedMembers permittedMembers;
+    private final HouseholdMembers householdMembers;
     private final AmplifierClient amplifierClient;
 
     private final AtomicBoolean inProgress = new AtomicBoolean();
 
     public Mono<Void> unlock(final String source, final String member) {
-        return permittedMembers.permitted(member)
+        return householdMembers.known(member)
             .flatMap(name -> Mono.using(
                     () -> inProgress.compareAndSet(false, true),
                     taken -> Mono.just(taken)
