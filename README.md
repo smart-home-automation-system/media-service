@@ -28,11 +28,11 @@
 
 The audio and video equipment of the house, part of the
 [smart-home-automation-system](https://github.com/smart-home-automation-system). Its first job (epic HAS-508) is the
-unlock of the amplifier: the amplifier hangs after every loss of the grid, and a member of the household with the
-permission `amplifier_unlock` presses a button in the dashboard to bring it back.
+unlock of the amplifier: the amplifier hangs after every loss of the grid, and the administrator - or a member of the
+household granted `amplifier_unlock` in the dashboard - presses a button on the media page to bring it back.
 
 - No database and no broker - the service is stateless.
-- Base path `/home/media`, routed by `api-gateway-service` (from HAS-516); the button is on the settings page of the
+- Base path `/home/media`, routed by `api-gateway-service` (from HAS-516); the button is on the media page of the
   dashboard (HAS-517).
 - Spring Boot 4.2.0, Java 21; `cholewa-commons` 2.0.0 (the error contract), `smart-home-sdk` 1.26.0 (the household
   profiles).
@@ -51,14 +51,14 @@ call is **sent once and never retried**, and only **one at a time**.
 **The state of the amplifier cannot be read**: its page redirects to the same `bl_index.asp` hung or healthy, and only
 port 80 is open. The answer of the unlock is the only outcome - do not build a status or a detection on the amplifier.
 
-`member` must be a switched-on member of the household registry holding the permission `amplifier_unlock`, checked
-against `GET /home/household/profiles` of `database-service` - a trace of who pressed and a guard against a mistake, not
-access control (nothing behind the gateway is authenticated). `source` is `dashboard`.
+`member` must be a switched-on member of the household registry, found in `GET /home/household/profiles` of
+`database-service` - a trace of who pressed. **The service checks no role and no permission** (since 0.3.0, HAS-517): who
+is offered the button is decided by the dashboard (the administrator, and a member granted `amplifier_unlock`); nothing
+behind the gateway is authenticated. `source` is `dashboard`.
 
 | Status | Code | When |
 |---|---|---|
 | `400` | `UNKNOWN_MEMBER` | no switched-on member of that name |
-| `403` | `NOT_PERMITTED` | the member does not hold `amplifier_unlock` |
 | `409` | `UNLOCK_IN_PROGRESS` | another unlock is on its way to the amplifier |
 | `502` | `AMPLIFIER_REFUSED` | the amplifier answered anything but the redirect, or closed the connection |
 | `503` | `AMPLIFIER_UNAVAILABLE` | no connection to the amplifier - nothing was sent |
